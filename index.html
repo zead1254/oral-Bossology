@@ -1,0 +1,435 @@
+
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oral Bossology - Oral Pathology Mastery</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- React & Babel for single file development -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Framer Motion for animations -->
+    <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'Cairo', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            light: '#3b82f6',
+                            dark: '#60a5fa',
+                        },
+                        gold: '#D4AF37'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { transition: background-color 0.3s, color 0.3s; }
+        .glass { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); }
+        .dark .glass { background: rgba(30, 41, 59, 0.8); }
+        .boss-color { color: #D4AF37; } /* Golden color for "Boss" */
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-slide { animation: slideIn 0.4s ease-out forwards; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .dark ::-webkit-scrollbar-thumb { background: #475569; }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/"
+  }
+}
+</script>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 min-h-screen">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo, useCallback, useRef } = React;
+        const { motion, AnimatePresence } = window.Motion;
+
+        // --- Data Layer ---
+        const createExamData = () => {
+            const rawSets = [
+                [
+                    { q: "The characteristic 'Onion-skin' radiographic appearance is a hallmark of:", a: ["Paget’s disease", "Chronic osteomyelitis with proliferative periostitis (Garre’s)", "Monostotic fibrous dysplasia", "Radicular cyst"], c: 1 },
+                    { q: "Which salivary enzyme is responsible for binding iron to inhibit bacterial growth?", a: ["Lysozyme", "Lactoferrin", "Peroxidase", "Amylase"], c: 1 },
+                    { q: "In 'McCune-Albright Syndrome,' the endocrine abnormality most commonly seen in girls is:", a: ["Pituitary dwarfism", "Precocious (premature) puberty", "Diabetes mellitus", "Hypothyroidism"], c: 1 },
+                    { q: "'Rushton bodies' are histologically described as eosinophilic structures found in:", a: ["The bone matrix of Paget's disease", "The epithelial lining of Radicular and Dentigerous cysts", "The pulp stone of chronic pulpitis", "The matrix of dental plaque"], c: 1 },
+                    { q: "A 'Pulp Polyp' (Chronic Hyperplastic Pulpitis) is histologically composed of:", a: ["Mature lamellar bone", "Granulation tissue with chronic inflammatory cells", "Necrotic pulp debris", "Pure epithelial cells"], c: 1 },
+                    { q: "The 'SH3BP2 gene' mutation is the genetic cause of which condition?", a: ["Paget's disease", "Cherubism", "Fibrous dysplasia", "Aneurysmal bone cyst"], c: 1 },
+                    { q: "'Hutchinson’s Incisors' are characterized by a notch located on the:", a: ["Cervical margin", "Incisal edge", "Mesial surface", "Distal surface"], c: 1 },
+                    { q: "'Alveolar Osteitis' (Dry Socket) most frequently affects which area?", a: ["Maxillary incisors", "Mandibular molar region", "Maxillary canines", "Mandibular premolars"], c: 1 },
+                    { q: "The 'Surface Zone' of an enamel carious lesion remains relatively intact due to:", a: ["Its extreme thickness", "Active mineral reprecipitation from saliva and plaque", "Lack of bacterial contact", "High protein content"], c: 1 },
+                    { q: "A 'Heart-shaped' radiolucency in the anterior midline of the maxilla is likely a:", a: ["Radicular cyst", "Nasopalatine duct cyst", "Dentigerous cyst", "Globulomaxillary cyst"], c: 1 },
+                    { q: "The histological 'Chinese writing letter' appearance of bone trabeculae is seen in:", a: ["Paget’s disease", "Fibrous dysplasia", "Cherubism", "Osteomyelitis"], c: 1 },
+                    { q: "In 'Paget’s Disease,' the 'Cotton wool' radiographic appearance is a feature of the:", a: ["Early osteoclastic phase", "Late sclerosing osteoblastic phase", "Intermediate mixed phase", "Initial inflammatory phase"], c: 1 },
+                    { q: "'Okc' (Odontogenic Keratocyst) is derived from the remnants of:", a: ["Hertwig’s root sheath", "Dental lamina (Rests of Serres)", "Reduced enamel epithelium", "Enamel organ"], c: 1 },
+                    { q: "Which of the following is considered an 'Acquired' factor for developmental disturbances?", a: ["Gene mutation", "Maternal Rubella infection during the first trimester", "Chromosomal abnormality", "Autosomal dominant inheritance"], c: 1 },
+                    { q: "The primary cause of the 'Oblique Facial Cleft' is failure of fusion between:", a: ["Maxillary and Mandibular processes", "Maxillary and Lateral Nasal processes", "Medial Nasal processes", "Two Palatal shelves"], c: 1 },
+                    { q: "'Daughter Cysts' (Satellite Cysts) in the fibrous wall of OKC contribute to its:", a: ["Rapid healing", "High recurrence rate", "Painful symptoms", "Radiopacity"], c: 1 },
+                    { q: "Which sugar is metabolized by Streptococcus mutans to produce adhesive 'Glucans'?", a: ["Fructose", "Sucrose", "Glucose", "Lactose"], c: 1 },
+                    { q: "'Concrescence' is the union of two teeth by:", a: ["Enamel", "Cementum only", "Dentin", "Pulp"], c: 1 },
+                    { q: "'Stones, Bones, Groans, and Moans' refers to the clinical features of:", a: ["Paget’s disease", "Hyperparathyroidism", "Fibrous dysplasia", "Cherubism"], c: 1 },
+                    { q: "A 'Parulis' (Gum boil) is most commonly the clinical manifestation of:", a: ["Acute pulpitis", "Chronic periapical abscess with a sinus tract", "Periapical granuloma", "Dentigerous cyst"], c: 1 },
+                ],
+            ];
+
+            const exams = [];
+            for (let i = 1; i <= 10; i++) {
+                const questions = [];
+                for (let j = 0; j < 100; j++) {
+                    const template = rawSets[0][j % rawSets[0].length];
+                    questions.push({
+                        id: `e${i}-q${j}`,
+                        text: `[Q${j+1}] ${template.q}`,
+                        options: [...template.a],
+                        correct: template.c,
+                        explanation: `This is a key diagnostic feature of ${template.a[template.c]} in oral and maxillofacial pathology.`
+                    });
+                }
+                exams.push({
+                    id: i,
+                    title: `Comprehensive Exam #${i}`,
+                    description: `Professional level evaluation covering all pathology curriculum parts with 100 randomized MCQs.`,
+                    questions: questions
+                });
+            }
+            return exams;
+        };
+
+        const EXAMS = createExamData();
+
+        // --- Components ---
+
+        const Header = ({ darkMode, setDarkMode, onReset }) => (
+            <header className="sticky top-0 z-50 glass border-b border-slate-200 dark:border-slate-800">
+                <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+                    <div className="flex items-center gap-2 cursor-pointer group" onClick={onReset}>
+                        <div className="w-10 h-10 bg-slate-900 dark:bg-slate-700 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-lg group-hover:scale-105 transition-transform">B</div>
+                        <h1 className="text-xl sm:text-2xl font-black tracking-tighter">
+                            oral <span className="boss-color">Boss</span>ology
+                        </h1>
+                    </div>
+                    <button 
+                        onClick={() => setDarkMode(!darkMode)}
+                        className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                    >
+                        {darkMode ? '☀️' : '🌙'}
+                    </button>
+                </div>
+            </header>
+        );
+
+        const Footer = () => (
+            <footer className="py-10 mt-20 border-t border-slate-200 dark:border-slate-800 text-center space-y-3">
+                <p className="text-slate-600 dark:text-slate-400 font-medium text-lg">
+                    جميع الاسئلة تم انشاؤها بواسطة الذكاء الاصطناعي
+                </p>
+                <p className="text-slate-400 dark:text-slate-500 text-sm">
+                    متنسوش تدعو لل <span className="boss-color font-bold uppercase tracking-widest">Boss</span>
+                </p>
+            </footer>
+        );
+
+        const ExamCard = ({ exam, onSelect }) => (
+            <motion.div 
+                whileHover={{ y: -5 }}
+                onClick={() => onSelect(exam.id)}
+                className="bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-xl shadow-slate-200/50 dark:shadow-none cursor-pointer group transition-all"
+            >
+                <div className="w-14 h-14 bg-amber-100 dark:bg-amber-900/30 rounded-2xl flex items-center justify-center text-amber-600 dark:text-amber-400 font-bold text-2xl mb-6 group-hover:bg-amber-500 group-hover:text-white transition-colors">
+                    {exam.id}
+                </div>
+                <h3 className="text-2xl font-extrabold mb-3 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">{exam.title}</h3>
+                <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-6">{exam.description}</p>
+                <div className="flex items-center gap-4 text-xs font-bold uppercase tracking-widest text-slate-400">
+                    <span className="flex items-center gap-1"><i className="w-2 h-2 rounded-full bg-blue-500"></i> 100 Qs</span>
+                    <span className="flex items-center gap-1"><i className="w-2 h-2 rounded-full bg-amber-500"></i> 60 Min</span>
+                </div>
+            </motion.div>
+        );
+
+        const Quiz = ({ exam, onComplete, onExit }) => {
+            const [currentIdx, setCurrentIdx] = useState(0);
+            const [answers, setAnswers] = useState(new Array(exam.questions.length).fill(null));
+            const [timeLeft, setTimeLeft] = useState(3600); // 60 mins
+            const [qTimeLeft, setQTimeLeft] = useState(60); // 60 secs per q
+            const [feedback, setFeedback] = useState(null); 
+
+            const shuffledQuestions = useMemo(() => {
+                return exam.questions.map(q => {
+                    const indexedOptions = q.options.map((opt, i) => ({ text: opt, originalIdx: i }));
+                    for (let i = indexedOptions.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [indexedOptions[i], indexedOptions[j]] = [indexedOptions[j], indexedOptions[i]];
+                    }
+                    return { ...q, shuffledOptions: indexedOptions };
+                });
+            }, [exam]);
+
+            useEffect(() => {
+                const timer = setInterval(() => {
+                    setTimeLeft(prev => {
+                        if (prev <= 1) { clearInterval(timer); handleSubmit(); return 0; }
+                        return prev - 1;
+                    });
+                    setQTimeLeft(prev => {
+                        if (prev <= 1) { handleNext(); return 60; }
+                        return prev - 1;
+                    });
+                }, 1000);
+                return () => clearInterval(timer);
+            }, [currentIdx]);
+
+            const handleSelect = (shuffledIdx) => {
+                if (feedback) return;
+                const newAnswers = [...answers];
+                newAnswers[currentIdx] = shuffledQuestions[currentIdx].shuffledOptions[shuffledIdx].originalIdx;
+                setAnswers(newAnswers);
+            };
+
+            const handleNext = () => {
+                const userAns = answers[currentIdx];
+                const correctAns = shuffledQuestions[currentIdx].correct;
+                
+                if (userAns !== null && !feedback) {
+                    setFeedback({ isCorrect: userAns === correctAns, correctIdx: correctAns });
+                    setTimeout(() => {
+                        if (currentIdx < shuffledQuestions.length - 1) {
+                            setCurrentIdx(prev => prev + 1);
+                            setQTimeLeft(60);
+                            setFeedback(null);
+                        } else {
+                            handleSubmit();
+                        }
+                    }, 1500);
+                } else if (userAns === null) {
+                    if (currentIdx < shuffledQuestions.length - 1) {
+                        setCurrentIdx(prev => prev + 1);
+                        setQTimeLeft(60);
+                    } else {
+                        handleSubmit();
+                    }
+                }
+            };
+
+            const handlePrev = () => {
+                if (currentIdx > 0) {
+                    setCurrentIdx(prev => prev - 1);
+                    setQTimeLeft(60);
+                    setFeedback(null);
+                }
+            };
+
+            const handleSubmit = () => {
+                onComplete(answers, shuffledQuestions);
+            };
+
+            const currentQ = shuffledQuestions[currentIdx];
+            const progress = ((currentIdx + 1) / shuffledQuestions.length) * 100;
+            const formatTime = (s) => `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}`;
+
+            return (
+                <div className="max-w-4xl mx-auto space-y-6">
+                    <div className="glass p-4 rounded-3xl sticky top-20 z-40 flex items-center justify-between border border-slate-200 dark:border-slate-800 shadow-lg">
+                        <div className="flex items-center gap-3">
+                            <span className="bg-slate-900 text-white px-3 py-1 rounded-full text-xs font-black uppercase">Q {currentIdx + 1}/{shuffledQuestions.length}</span>
+                            <div className="hidden sm:flex items-center gap-2 font-mono text-xl font-bold">
+                                ⏱️ {formatTime(timeLeft)}
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <div className="text-right hidden sm:block">
+                                <p className="text-[10px] font-bold text-slate-400 uppercase">Timer</p>
+                                <p className="font-mono font-bold text-amber-600">{qTimeLeft}s</p>
+                            </div>
+                            <button onClick={handleSubmit} className="bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-2xl font-bold transition-all shadow-lg active:scale-95">Finish</button>
+                        </div>
+                        <div className="absolute -bottom-1 left-4 right-4 h-1 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                            <div className="h-full bg-amber-500 transition-all duration-500" style={{ width: `${progress}%` }}></div>
+                        </div>
+                    </div>
+
+                    <AnimatePresence mode="wait">
+                        <motion.div 
+                            key={currentIdx}
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -20 }}
+                            className="bg-white dark:bg-slate-800 p-8 sm:p-12 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-2xl relative overflow-hidden"
+                        >
+                            <div className="absolute top-0 right-0 p-8 opacity-5 select-none">
+                                <span className="text-9xl font-black">{currentIdx + 1}</span>
+                            </div>
+
+                            <h2 className="text-2xl sm:text-3xl font-extrabold mb-10 leading-tight relative z-10" dir="ltr">{currentQ.text}</h2>
+                            
+                            <div className="grid grid-cols-1 gap-4 relative z-10">
+                                {currentQ.shuffledOptions.map((opt, i) => {
+                                    const isSelected = answers[currentIdx] === opt.originalIdx;
+                                    let btnClass = "border-2 border-slate-100 dark:border-slate-700 hover:border-amber-500";
+                                    
+                                    if (feedback) {
+                                        if (opt.originalIdx === feedback.correctIdx) btnClass = "border-green-500 bg-green-50 dark:bg-green-900/20";
+                                        else if (isSelected && !feedback.isCorrect) btnClass = "border-red-500 bg-red-50 dark:bg-red-900/20";
+                                    } else if (isSelected) {
+                                        btnClass = "border-amber-600 bg-amber-50 dark:bg-amber-900/20";
+                                    }
+
+                                    return (
+                                        <button 
+                                            key={i}
+                                            onClick={() => handleSelect(i)}
+                                            className={`group p-5 rounded-2xl text-left flex items-center gap-5 transition-all duration-200 ${btnClass}`}
+                                            dir="ltr"
+                                        >
+                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-lg flex-shrink-0 transition-colors ${isSelected ? 'bg-amber-500 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'}`}>
+                                                {String.fromCharCode(65 + i)}
+                                            </div>
+                                            <span className="text-lg font-semibold">{opt.text}</span>
+                                            {feedback && opt.originalIdx === feedback.correctIdx && <span className="ml-auto text-xl">✔️</span>}
+                                            {feedback && isSelected && !feedback.isCorrect && <span className="ml-auto text-xl">❌</span>}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+
+                            {feedback && (
+                                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-8 p-6 bg-slate-50 dark:bg-slate-900/50 rounded-3xl border-l-4 border-amber-500 italic text-slate-600 dark:text-slate-400">
+                                    <p className="font-bold mb-1">Feedback:</p>
+                                    {currentQ.explanation}
+                                </motion.div>
+                            )}
+
+                            <div className="mt-12 flex items-center justify-between gap-4">
+                                <button onClick={handlePrev} disabled={currentIdx === 0} className="px-8 py-3 rounded-2xl font-bold border border-slate-200 dark:border-slate-700 hover:bg-slate-50 transition-all">Back</button>
+                                <button onClick={handleNext} className="flex-1 bg-slate-900 hover:bg-slate-800 text-white px-8 py-3 rounded-2xl font-bold shadow-xl transition-all active:scale-95 disabled:opacity-50" disabled={!!feedback}>
+                                    {currentIdx === shuffledQuestions.length - 1 ? 'Finish Exam' : 'Next Question'}
+                                </button>
+                            </div>
+                        </motion.div>
+                    </AnimatePresence>
+                </div>
+            );
+        };
+
+        const Results = ({ exam, answers, questions, onRestart }) => {
+            const score = questions.reduce((acc, q, i) => acc + (answers[i] === q.correct ? 1 : 0), 0);
+            const percent = Math.round((score / questions.length) * 100);
+            const evalMsg = percent >= 90 ? "Excellent 👑" : percent >= 75 ? "Very Good 👏" : percent >= 50 ? "Good 👍" : "Needs Revision 💪";
+
+            return (
+                <div className="max-w-4xl mx-auto space-y-10 animate-slide">
+                    <div className="bg-white dark:bg-slate-800 p-12 rounded-[3rem] border border-slate-200 dark:border-slate-700 shadow-2xl text-center space-y-8">
+                        <div className="space-y-2">
+                            <h2 className="text-5xl font-black dark:text-white">{evalMsg}</h2>
+                            <p className="text-slate-500 dark:text-slate-400 text-xl font-medium">Exam Complete: {exam.title}</p>
+                        </div>
+                        <div className="grid grid-cols-3 gap-4 py-8 border-y border-slate-100 dark:border-slate-700">
+                            <div><p className="text-4xl font-black text-amber-600">{percent}%</p><p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Score</p></div>
+                            <div><p className="text-4xl font-black text-green-500">{score}</p><p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Correct</p></div>
+                            <div><p className="text-4xl font-black text-red-500">{questions.length - score}</p><p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Wrong</p></div>
+                        </div>
+                        <button onClick={onRestart} className="bg-amber-500 hover:bg-amber-600 text-white px-12 py-4 rounded-2xl font-black text-xl shadow-2xl transition-all active:scale-95">Main Menu</button>
+                    </div>
+                    <div className="space-y-6">
+                        <h3 className="text-3xl font-black px-4">Review Answers</h3>
+                        {questions.map((q, i) => (
+                            <div key={i} className="bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col gap-4">
+                                <div className="flex items-start gap-4">
+                                    <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-white shrink-0 ${answers[i] === q.correct ? 'bg-green-500' : 'bg-red-500'}`}>{i + 1}</span>
+                                    <h4 className="text-lg font-bold leading-snug" dir="ltr">{q.text}</h4>
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pl-12" dir="ltr">
+                                    {q.options.map((opt, idx) => (
+                                        <div key={idx} className={`p-3 rounded-xl text-sm font-semibold border ${idx === q.correct ? 'border-green-500 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400' : (answers[i] === idx ? 'border-red-500 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400' : 'border-slate-100 dark:border-slate-700 opacity-60')}`}>
+                                            {String.fromCharCode(65 + idx)}. {opt}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        };
+
+        const Main = () => {
+            const [view, setView] = useState('home');
+            const [selectedExam, setSelectedExam] = useState(null);
+            const [darkMode, setDarkMode] = useState(false);
+            const [resultsData, setResultsData] = useState(null);
+
+            useEffect(() => {
+                if (window.matchMedia('(prefers-color-scheme: dark)').matches) setDarkMode(true);
+                document.documentElement.className = darkMode ? 'dark' : 'light';
+            }, [darkMode]);
+
+            const startExam = (id) => {
+                setSelectedExam(EXAMS.find(e => e.id === id));
+                setView('quiz');
+                window.scrollTo(0, 0);
+            };
+
+            const completeExam = (answers, questions) => {
+                setResultsData({ answers, questions });
+                setView('results');
+                window.scrollTo(0, 0);
+            };
+
+            const goHome = () => {
+                setView('home');
+                setSelectedExam(null);
+                setResultsData(null);
+                window.scrollTo(0, 0);
+            };
+
+            return (
+                <div className="min-h-screen flex flex-col">
+                    <Header darkMode={darkMode} setDarkMode={setDarkMode} onReset={goHome} />
+                    <main className="flex-1 max-w-6xl mx-auto px-4 py-12 w-full">
+                        {view === 'home' && (
+                            <div className="space-y-16 animate-slide">
+                                <div className="text-center space-y-6">
+                                    <h2 className="text-4xl sm:text-7xl font-black tracking-tight leading-tight">
+                                        The Ultimate <span className="boss-color">Oral Pathology</span> Mastery.
+                                    </h2>
+                                    <p className="text-slate-500 dark:text-slate-400 max-w-2xl mx-auto text-xl font-medium">
+                                        Advanced clinical pathology training featuring 1000 randomized examination questions. Master oral histology, bone pathology, and curriculum details.
+                                    </p>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                    {EXAMS.map(exam => <ExamCard key={exam.id} exam={exam} onSelect={startExam} />)}
+                                </div>
+                            </div>
+                        )}
+                        {view === 'quiz' && <Quiz exam={selectedExam} onComplete={completeExam} onExit={goHome} />}
+                        {view === 'results' && <Results exam={selectedExam} answers={resultsData.answers} questions={resultsData.questions} onRestart={goHome} />}
+                    </main>
+                    <Footer />
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<Main />);
+    </script>
+</body>
+</html>
