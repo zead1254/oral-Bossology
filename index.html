@@ -1,6 +1,6 @@
 
 <!DOCTYPE html>
-<html lang="en" class="light">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -29,7 +29,11 @@
                             light: '#3b82f6',
                             dark: '#60a5fa',
                         },
-                        gold: '#D4AF37'
+                        gold: {
+                            light: '#FCF6BA',
+                            DEFAULT: '#D4AF37',
+                            dark: '#AA771C'
+                        }
                     }
                 }
             }
@@ -38,14 +42,34 @@
     <style>
         body { transition: background-color 0.3s, color 0.3s; }
         .glass { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); }
-        .dark .glass { background: rgba(30, 41, 59, 0.8); }
-        .boss-color { color: #D4AF37; } /* Golden color for "Boss" */
+        .dark .glass { background: rgba(15, 23, 42, 0.8); }
+        
+        /* Realistic Metallic Gold Gradient */
+        .boss-gold-text {
+            background: linear-gradient(to right, #BF953F, #FCF6BA, #B38728, #FBF5B7, #AA771C);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+            display: inline-block;
+            filter: drop-shadow(0px 1px 1px rgba(0,0,0,0.1));
+        }
+
+        .boss-color { color: #D4AF37; } /* Fallback */
+
         @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .animate-slide { animation: slideIn 0.4s ease-out forwards; }
+        
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         .dark ::-webkit-scrollbar-thumb { background: #475569; }
+
+        .typewriter-cursor::after {
+            content: "|";
+            animation: blink 1s infinite;
+        }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
     </style>
 <script type="importmap">
 {
@@ -57,7 +81,7 @@
 }
 </script>
 </head>
-<body class="bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 min-h-screen">
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 min-h-screen font-sans">
     <div id="root"></div>
 
     <script type="text/babel">
@@ -118,13 +142,73 @@
 
         // --- Components ---
 
+        const SplashScreen = ({ onComplete }) => {
+            const fullMessage = "جميع الاسئلة تم انشاؤها بواسطة الذكاء الاصطناعي، متنسوش تدعو لل Boss 🤲";
+            const [text, setText] = useState("");
+            const [showGoldBoss, setShowGoldBoss] = useState(false);
+
+            useEffect(() => {
+                let currentIdx = 0;
+                const interval = setInterval(() => {
+                    if (currentIdx <= fullMessage.length) {
+                        setText(fullMessage.substring(0, currentIdx));
+                        currentIdx++;
+                    } else {
+                        clearInterval(interval);
+                        setShowGoldBoss(true);
+                        setTimeout(onComplete, 2000); // Wait 2s after finishing typing
+                    }
+                }, 40); // Fast typing speed
+                return () => clearInterval(interval);
+            }, [onComplete]);
+
+            // Helper to render text with styled "Boss"
+            const renderMessage = () => {
+                if (!showGoldBoss) return <span className="typewriter-cursor">{text}</span>;
+                
+                const parts = fullMessage.split("Boss");
+                return (
+                    <span>
+                        {parts[0]}
+                        <span className="boss-gold-text font-black px-1">Boss</span>
+                        {parts[1]}
+                    </span>
+                );
+            };
+
+            return (
+                <motion.div 
+                    initial={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 1 }}
+                    className="fixed inset-0 z-[100] bg-slate-900 flex flex-col items-center justify-center p-6 text-center"
+                >
+                    <div className="w-20 h-20 bg-slate-800 rounded-3xl flex items-center justify-center text-white mb-8 shadow-2xl border border-slate-700">
+                        <motion.span 
+                            animate={{ opacity: [1, 0.5, 1] }} 
+                            transition={{ repeat: Infinity, duration: 1.5 }}
+                            className="text-4xl font-black"
+                        >
+                            B
+                        </motion.span>
+                    </div>
+                    <h2 
+                        dir="rtl" 
+                        className="text-2xl sm:text-4xl font-bold leading-relaxed text-white max-w-2xl transition-all"
+                    >
+                        {renderMessage()}
+                    </h2>
+                </motion.div>
+            );
+        };
+
         const Header = ({ darkMode, setDarkMode, onReset }) => (
             <header className="sticky top-0 z-50 glass border-b border-slate-200 dark:border-slate-800">
                 <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-2 cursor-pointer group" onClick={onReset}>
                         <div className="w-10 h-10 bg-slate-900 dark:bg-slate-700 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-lg group-hover:scale-105 transition-transform">B</div>
                         <h1 className="text-xl sm:text-2xl font-black tracking-tighter">
-                            oral <span className="boss-color">Boss</span>ology
+                            oral <span className="boss-gold-text">Boss</span>ology
                         </h1>
                     </div>
                     <button 
@@ -143,7 +227,7 @@
                     جميع الاسئلة تم انشاؤها بواسطة الذكاء الاصطناعي
                 </p>
                 <p className="text-slate-400 dark:text-slate-500 text-sm">
-                    متنسوش تدعو لل <span className="boss-color font-bold uppercase tracking-widest">Boss</span>
+                    متنسوش تدعو لل <span className="boss-gold-text font-bold uppercase tracking-widest">Boss</span> 🤲
                 </p>
             </footer>
         );
@@ -373,14 +457,16 @@
 
         const Main = () => {
             const [view, setView] = useState('home');
+            const [isLoading, setIsLoading] = useState(true);
             const [selectedExam, setSelectedExam] = useState(null);
-            const [darkMode, setDarkMode] = useState(false);
+            const [darkMode, setDarkMode] = useState(true); // Default to Dark Mode
             const [resultsData, setResultsData] = useState(null);
 
             useEffect(() => {
-                if (window.matchMedia('(prefers-color-scheme: dark)').matches) setDarkMode(true);
-                document.documentElement.className = darkMode ? 'dark' : 'light';
-            }, [darkMode]);
+                // Initialize dark mode
+                document.documentElement.className = 'dark';
+                setDarkMode(true);
+            }, []);
 
             const startExam = (id) => {
                 setSelectedExam(EXAMS.find(e => e.id === id));
@@ -402,28 +488,36 @@
             };
 
             return (
-                <div className="min-h-screen flex flex-col">
-                    <Header darkMode={darkMode} setDarkMode={setDarkMode} onReset={goHome} />
-                    <main className="flex-1 max-w-6xl mx-auto px-4 py-12 w-full">
-                        {view === 'home' && (
-                            <div className="space-y-16 animate-slide">
-                                <div className="text-center space-y-6">
-                                    <h2 className="text-4xl sm:text-7xl font-black tracking-tight leading-tight">
-                                        The Ultimate <span className="boss-color">Oral Pathology</span> Mastery.
-                                    </h2>
-                                    <p className="text-slate-500 dark:text-slate-400 max-w-2xl mx-auto text-xl font-medium">
-                                        Advanced clinical pathology training featuring 1000 randomized examination questions. Master oral histology, bone pathology, and curriculum details.
-                                    </p>
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                                    {EXAMS.map(exam => <ExamCard key={exam.id} exam={exam} onSelect={startExam} />)}
-                                </div>
-                            </div>
-                        )}
-                        {view === 'quiz' && <Quiz exam={selectedExam} onComplete={completeExam} onExit={goHome} />}
-                        {view === 'results' && <Results exam={selectedExam} answers={resultsData.answers} questions={resultsData.questions} onRestart={goHome} />}
-                    </main>
-                    <Footer />
+                <div className="min-h-screen flex flex-col transition-colors">
+                    <AnimatePresence>
+                        {isLoading && <SplashScreen onComplete={() => setIsLoading(false)} />}
+                    </AnimatePresence>
+
+                    {!isLoading && (
+                        <>
+                            <Header darkMode={darkMode} setDarkMode={setDarkMode} onReset={goHome} />
+                            <main className="flex-1 max-w-6xl mx-auto px-4 py-12 w-full">
+                                {view === 'home' && (
+                                    <div className="space-y-16 animate-slide">
+                                        <div className="text-center space-y-6">
+                                            <h2 className="text-4xl sm:text-7xl font-black tracking-tight leading-tight">
+                                                The Ultimate <span className="boss-gold-text">Oral Pathology</span> Mastery.
+                                            </h2>
+                                            <p className="text-slate-500 dark:text-slate-400 max-w-2xl mx-auto text-xl font-medium">
+                                                Advanced clinical pathology training featuring 1000 randomized examination questions. Master oral histology, bone pathology, and curriculum details.
+                                            </p>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                            {EXAMS.map(exam => <ExamCard key={exam.id} exam={exam} onSelect={startExam} />)}
+                                        </div>
+                                    </div>
+                                )}
+                                {view === 'quiz' && <Quiz exam={selectedExam} onComplete={completeExam} onExit={goHome} />}
+                                {view === 'results' && <Results exam={selectedExam} answers={resultsData.answers} questions={resultsData.questions} onRestart={goHome} />}
+                            </main>
+                            <Footer />
+                        </>
+                    )}
                 </div>
             );
         };
