@@ -40,7 +40,6 @@
         .glass { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); }
         .dark .glass { background: rgba(15, 23, 42, 0.8); }
         
-        /* Realistic Metallic Gold Gradient */
         .boss-gold-text {
             background: linear-gradient(to right, #BF953F, #FCF6BA, #B38728, #FBF5B7, #AA771C);
             -webkit-background-clip: text;
@@ -65,21 +64,16 @@
         }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
-        .audio-hint {
-            animation: bounce 2s infinite;
-        }
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
-            40% {transform: translateY(-5px);}
-            60% {transform: translateY(-3px);}
+        input[type=range] {
+            accent-color: #D4AF37;
         }
     </style>
 <script type="importmap">
 {
   "imports": {
-    "react": "https://esm.sh/react@^19.2.3",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-    "react/": "https://esm.sh/react@^19.2.3/"
+    "react": "https://esm.sh/react@^18.2.0",
+    "react-dom/": "https://esm.sh/react-dom@^18.2.0/",
+    "react/": "https://esm.sh/react@^18.2.0/"
   }
 }
 </script>
@@ -195,63 +189,124 @@
                     <h2 dir="rtl" className="text-2xl sm:text-4xl font-bold leading-relaxed text-slate-100 max-w-3xl drop-shadow-lg">
                         {renderMessage()}
                     </h2>
-                    <p className="mt-8 text-slate-500 text-sm font-mono animate-pulse tracking-widest">INITIALIZING PATHOLOGY CORE...</p>
+                    <p className="mt-8 text-slate-500 text-sm font-mono animate-pulse tracking-widest uppercase">Initializing Bossology Mastery...</p>
                 </motion.div>
             );
         };
 
-        const Header = ({ darkMode, setDarkMode, onReset, audioPlaying, setAudioPlaying }) => (
-            <header className="sticky top-0 z-50 glass border-b border-slate-200 dark:border-slate-800">
-                <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-                    <div className="flex items-center gap-2 cursor-pointer group" onClick={onReset}>
-                        <div className="w-10 h-10 bg-slate-900 dark:bg-slate-700 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-lg group-hover:scale-105 transition-transform">B</div>
-                        <h1 className="text-xl sm:text-2xl font-black tracking-tighter">
-                            oral <span className="boss-gold-text">Boss</span>ology
-                        </h1>
+        const Header = ({ darkMode, setDarkMode, onReset, audioPlaying, setAudioPlaying, volume, setVolume, remindersEnabled, setRemindersEnabled }) => {
+            const [showAudioMenu, setShowAudioMenu] = useState(false);
+
+            return (
+                <header className="sticky top-0 z-50 glass border-b border-slate-200 dark:border-slate-800">
+                    <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+                        <div className="flex items-center gap-2 cursor-pointer group" onClick={onReset}>
+                            <div className="w-10 h-10 bg-slate-900 dark:bg-slate-700 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-lg group-hover:scale-105 transition-transform">B</div>
+                            <h1 className="text-xl sm:text-2xl font-black tracking-tighter">
+                                oral <span className="boss-gold-text">Boss</span>ology
+                            </h1>
+                        </div>
+                        
+                        <div className="flex items-center gap-2 sm:gap-4">
+                            {/* Reminder Switch */}
+                            <button 
+                                onClick={() => setRemindersEnabled(!remindersEnabled)}
+                                className={`p-2.5 rounded-xl transition-all ${remindersEnabled ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-600' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}
+                                title={remindersEnabled ? "تعطيل تذكير الصلاة" : "تفعيل تذكير الصلاة"}
+                            >
+                                {remindersEnabled ? '🔔' : '🔕'}
+                            </button>
+
+                            {/* Audio Controller Popover */}
+                            <div className="relative">
+                                <button 
+                                    onClick={() => setShowAudioMenu(!showAudioMenu)}
+                                    className={`p-2.5 rounded-xl transition-all ${audioPlaying ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-600' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}
+                                >
+                                    {audioPlaying ? '🔊' : '🔇'}
+                                </button>
+                                
+                                <AnimatePresence>
+                                    {showAudioMenu && (
+                                        <motion.div 
+                                            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                                            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                            className="absolute right-0 mt-3 w-56 glass border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-2xl z-50 text-right"
+                                            dir="rtl"
+                                        >
+                                            <div className="space-y-5">
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-xs font-black uppercase tracking-widest text-slate-400">التلاوة</span>
+                                                    <button 
+                                                        onClick={() => setAudioPlaying(!audioPlaying)}
+                                                        className="text-xl p-1 bg-slate-100 dark:bg-slate-800 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                                                    >
+                                                        {audioPlaying ? '⏸️' : '▶️'}
+                                                    </button>
+                                                </div>
+                                                <div className="space-y-3">
+                                                    <div className="flex justify-between items-center text-[11px] font-bold text-slate-500 uppercase">
+                                                        <span>مستوى الصوت</span>
+                                                        <span className="font-mono">{Math.round(volume * 100)}%</span>
+                                                    </div>
+                                                    <input 
+                                                        type="range" 
+                                                        min="0" 
+                                                        max="1" 
+                                                        step="0.01" 
+                                                        value={volume} 
+                                                        onChange={(e) => setVolume(parseFloat(e.target.value))}
+                                                        className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg cursor-pointer"
+                                                    />
+                                                </div>
+                                                <div className="pt-2 border-t border-slate-100 dark:border-slate-700">
+                                                    <p className="text-[10px] text-slate-400 font-medium leading-relaxed">يمكنك تشغيل أو إيقاف الصوت والتحكم في المستوى من هنا</p>
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
+
+                            {/* Theme Control */}
+                            <button 
+                                onClick={() => setDarkMode(!darkMode)}
+                                className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                            >
+                                {darkMode ? '☀️' : '🌙'}
+                            </button>
+                        </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                        <button 
-                            onClick={() => setAudioPlaying(!audioPlaying)}
-                            className={`p-2.5 rounded-xl transition-all relative ${audioPlaying ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-600' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}
-                        >
-                            {audioPlaying ? '🔊' : '🔇'}
-                        </button>
-                        <button 
-                            onClick={() => setDarkMode(!darkMode)}
-                            className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
-                        >
-                            {darkMode ? '☀️' : '🌙'}
-                        </button>
-                    </div>
-                </div>
-            </header>
-        );
+                </header>
+            );
+        };
 
         const Footer = () => (
-            <footer className="py-10 mt-20 border-t border-slate-200 dark:border-slate-800 text-center space-y-3">
-                <p className="text-slate-600 dark:text-slate-400 font-medium text-lg">
+            <footer className="py-12 mt-20 border-t border-slate-200 dark:border-slate-800 text-center space-y-4">
+                <p className="text-slate-600 dark:text-slate-400 font-bold text-xl">
                     جميع الاسئلة تم انشاؤها بواسطة الذكاء الاصطناعي
                 </p>
-                <p className="text-slate-400 dark:text-slate-500 text-sm">
-                    متنسوش تدعو لل <span className="boss-gold-text font-bold uppercase tracking-widest">Boss</span>🤲
+                <p className="text-slate-400 dark:text-slate-500 text-sm font-medium">
+                    متنسوش تدعو للـ <span className="boss-gold-text font-black uppercase tracking-widest">Boss</span> 🤲
                 </p>
             </footer>
         );
 
         const ExamCard = ({ exam, onSelect }) => (
             <motion.div 
-                whileHover={{ y: -5 }}
+                whileHover={{ y: -8, scale: 1.02 }}
                 onClick={() => onSelect(exam.id)}
-                className="bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-xl shadow-slate-200/50 dark:shadow-none cursor-pointer group transition-all"
+                className="bg-white dark:bg-slate-800 p-8 rounded-[2rem] border border-slate-200 dark:border-slate-700 shadow-xl shadow-slate-200/50 dark:shadow-none cursor-pointer group transition-all"
             >
-                <div className="w-14 h-14 bg-amber-100 dark:bg-amber-900/30 rounded-2xl flex items-center justify-center text-amber-600 dark:text-amber-400 font-bold text-2xl mb-6 group-hover:bg-amber-500 group-hover:text-white transition-colors">
+                <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/30 rounded-2xl flex items-center justify-center text-amber-600 dark:text-amber-400 font-black text-3xl mb-8 group-hover:bg-amber-500 group-hover:text-white transition-all shadow-lg">
                     {exam.id}
                 </div>
-                <h3 className="text-2xl font-extrabold mb-3 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">{exam.title}</h3>
-                <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-6">{exam.description}</p>
-                <div className="flex items-center gap-4 text-xs font-bold uppercase tracking-widest text-slate-400">
-                    <span className="flex items-center gap-1"><i className="w-2 h-2 rounded-full bg-blue-500"></i> 100 Qs</span>
-                    <span className="flex items-center gap-1"><i className="w-2 h-2 rounded-full bg-amber-500"></i> 60 Min</span>
+                <h3 className="text-2xl font-black mb-4 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">{exam.title}</h3>
+                <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-8">{exam.description}</p>
+                <div className="flex items-center gap-5 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                    <span className="flex items-center gap-2"><i className="w-2.5 h-2.5 rounded-full bg-blue-500"></i> 100 Qs</span>
+                    <span className="flex items-center gap-2"><i className="w-2.5 h-2.5 rounded-full bg-amber-500"></i> 60 Min</span>
                 </div>
             </motion.div>
         );
@@ -309,7 +364,7 @@
                         } else {
                             handleSubmit();
                         }
-                    }, 1500);
+                    }, 1400);
                 } else if (userAns === null) {
                     if (currentIdx < shuffledQuestions.length - 1) {
                         setCurrentIdx(prev => prev + 1);
@@ -337,81 +392,81 @@
             const formatTime = (s) => `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}`;
 
             return (
-                <div className="max-w-4xl mx-auto space-y-6">
-                    <div className="glass p-4 rounded-3xl sticky top-20 z-40 flex items-center justify-between border border-slate-200 dark:border-slate-800 shadow-lg">
-                        <div className="flex items-center gap-3">
-                            <span className="bg-slate-900 text-white px-3 py-1 rounded-full text-xs font-black uppercase">Q {currentIdx + 1}/{shuffledQuestions.length}</span>
-                            <div className="hidden sm:flex items-center gap-2 font-mono text-xl font-bold">
-                                ⏱️ {formatTime(timeLeft)}
+                <div className="max-w-4xl mx-auto space-y-8 animate-slide">
+                    <div className="glass p-5 rounded-[2rem] sticky top-20 z-40 flex items-center justify-between border border-slate-200 dark:border-slate-800 shadow-xl">
+                        <div className="flex items-center gap-4">
+                            <span className="bg-slate-900 dark:bg-slate-700 text-white px-4 py-1.5 rounded-full text-xs font-black uppercase shadow-inner">Q {currentIdx + 1}/{shuffledQuestions.length}</span>
+                            <div className="hidden sm:flex items-center gap-3 font-mono text-2xl font-black text-slate-800 dark:text-white">
+                                <span className="text-xl">⏱️</span> {formatTime(timeLeft)}
                             </div>
                         </div>
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-4">
                             <div className="text-right hidden sm:block">
-                                <p className="text-[10px] font-bold text-slate-400 uppercase">Timer</p>
-                                <p className="font-mono font-bold text-amber-600">{qTimeLeft}s</p>
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Q-Timer</p>
+                                <p className="font-mono font-black text-amber-600 text-lg">{qTimeLeft}s</p>
                             </div>
-                            <button onClick={handleSubmit} className="bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-2xl font-bold transition-all shadow-lg active:scale-95">Finish</button>
+                            <button onClick={handleSubmit} className="bg-red-500 hover:bg-red-600 text-white px-6 py-2.5 rounded-2xl font-black shadow-lg transition-all active:scale-95">إنهاء</button>
                         </div>
-                        <div className="absolute -bottom-1 left-4 right-4 h-1 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                            <div className="h-full bg-amber-500 transition-all duration-500" style={{ width: `${progress}%` }}></div>
+                        <div className="absolute -bottom-1.5 left-6 right-6 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                            <div className="h-full bg-amber-500 transition-all duration-700 ease-out" style={{ width: `${progress}%` }}></div>
                         </div>
                     </div>
 
                     <AnimatePresence mode="wait">
                         <motion.div 
                             key={currentIdx}
-                            initial={{ opacity: 0, x: 20 }}
+                            initial={{ opacity: 0, x: 30 }}
                             animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -20 }}
-                            className="bg-white dark:bg-slate-800 p-8 sm:p-12 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-2xl relative overflow-hidden"
+                            exit={{ opacity: 0, x: -30 }}
+                            className="bg-white dark:bg-slate-800 p-10 sm:p-14 rounded-[3rem] border border-slate-200 dark:border-slate-700 shadow-2xl relative overflow-hidden"
                         >
-                            <div className="absolute top-0 right-0 p-8 opacity-5 select-none text-slate-200 dark:text-slate-700">
-                                <span className="text-9xl font-black">{currentIdx + 1}</span>
+                            <div className="absolute top-0 right-0 p-12 opacity-5 select-none text-slate-200 dark:text-slate-700">
+                                <span className="text-[12rem] font-black leading-none">{currentIdx + 1}</span>
                             </div>
 
-                            <h2 className="text-2xl sm:text-3xl font-extrabold mb-10 leading-tight relative z-10" dir="ltr">{currentQ.text}</h2>
+                            <h2 className="text-2xl sm:text-3xl font-black mb-12 leading-relaxed relative z-10 text-slate-900 dark:text-white" dir="ltr">{currentQ.text}</h2>
                             
-                            <div className="grid grid-cols-1 gap-4 relative z-10">
+                            <div className="grid grid-cols-1 gap-5 relative z-10">
                                 {currentQ.shuffledOptions.map((opt, i) => {
                                     const isSelected = answers[currentIdx] === opt.originalIdx;
-                                    let btnClass = "border-2 border-slate-100 dark:border-slate-700 hover:border-amber-500";
+                                    let btnClass = "border-2 border-slate-100 dark:border-slate-700 hover:border-amber-400 hover:bg-slate-50 dark:hover:bg-slate-700/50";
                                     
                                     if (feedback) {
                                         if (opt.originalIdx === feedback.correctIdx) btnClass = "border-green-500 bg-green-50 dark:bg-green-900/20";
                                         else if (isSelected && !feedback.isCorrect) btnClass = "border-red-500 bg-red-50 dark:bg-red-900/20";
                                     } else if (isSelected) {
-                                        btnClass = "border-amber-600 bg-amber-50 dark:bg-amber-900/20";
+                                        btnClass = "border-amber-600 bg-amber-50 dark:bg-amber-900/30";
                                     }
 
                                     return (
                                         <button 
                                             key={i}
                                             onClick={() => handleSelect(i)}
-                                            className={`group p-5 rounded-2xl text-left flex items-center gap-5 transition-all duration-200 ${btnClass}`}
+                                            className={`group p-6 rounded-[1.5rem] text-left flex items-center gap-6 transition-all duration-300 ${btnClass}`}
                                             dir="ltr"
                                         >
-                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-lg flex-shrink-0 transition-colors ${isSelected ? 'bg-amber-500 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'}`}>
+                                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-black text-xl flex-shrink-0 transition-all ${isSelected ? 'bg-amber-500 text-white shadow-lg' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 group-hover:scale-110'}`}>
                                                 {String.fromCharCode(65 + i)}
                                             </div>
-                                            <span className="text-lg font-semibold">{opt.text}</span>
-                                            {feedback && opt.originalIdx === feedback.correctIdx && <span className="ml-auto text-xl">✔️</span>}
-                                            {feedback && isSelected && !feedback.isCorrect && <span className="ml-auto text-xl">❌</span>}
+                                            <span className="text-xl font-bold">{opt.text}</span>
+                                            {feedback && opt.originalIdx === feedback.correctIdx && <span className="ml-auto text-2xl">✔️</span>}
+                                            {feedback && isSelected && !feedback.isCorrect && <span className="ml-auto text-2xl">❌</span>}
                                         </button>
                                     );
                                 })}
                             </div>
 
                             {feedback && (
-                                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-8 p-6 bg-slate-50 dark:bg-slate-900/50 rounded-3xl border-l-4 border-amber-500 italic text-slate-600 dark:text-slate-400">
-                                    <p className="font-bold mb-1">Feedback:</p>
-                                    {currentQ.explanation}
+                                <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="mt-10 p-8 bg-slate-50 dark:bg-slate-900/60 rounded-[2rem] border-l-8 border-amber-500 text-slate-700 dark:text-slate-300 shadow-inner">
+                                    <p className="font-black text-lg mb-2 uppercase tracking-tight">Key Insight:</p>
+                                    <p className="leading-relaxed font-medium">{currentQ.explanation}</p>
                                 </motion.div>
                             )}
 
-                            <div className="mt-12 flex items-center justify-between gap-4">
-                                <button onClick={handlePrev} disabled={currentIdx === 0} className="px-8 py-3 rounded-2xl font-bold border border-slate-200 dark:border-slate-700 hover:bg-slate-50 transition-all">Back</button>
-                                <button onClick={handleNext} className="flex-1 bg-slate-900 hover:bg-slate-800 text-white px-8 py-3 rounded-2xl font-bold shadow-xl transition-all active:scale-95 disabled:opacity-50" disabled={!!feedback}>
-                                    {currentIdx === shuffledQuestions.length - 1 ? 'Finish Exam' : 'Next Question'}
+                            <div className="mt-14 flex items-center justify-between gap-6">
+                                <button onClick={handlePrev} disabled={currentIdx === 0} className="px-10 py-4 rounded-2xl font-black border-2 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all disabled:opacity-30">السابق</button>
+                                <button onClick={handleNext} className="flex-1 bg-slate-900 dark:bg-amber-600 hover:bg-slate-800 dark:hover:bg-amber-700 text-white px-10 py-4 rounded-2xl font-black text-lg shadow-2xl transition-all active:scale-95 disabled:opacity-50" disabled={!!feedback}>
+                                    {currentIdx === shuffledQuestions.length - 1 ? 'إنهاء الامتحان' : 'السؤال التالي'}
                                 </button>
                             </div>
                         </motion.div>
@@ -423,21 +478,21 @@
         const Results = ({ exam, answers, questions, onRestart }) => {
             const score = questions.reduce((acc, q, i) => acc + (answers[i] === q.correct ? 1 : 0), 0);
             const percent = Math.round((score / questions.length) * 100);
-            const evalMsg = percent >= 90 ? "Excellent 👑" : percent >= 75 ? "Very Good 👏" : percent >= 50 ? "Good 👍" : "Needs Revision 💪";
+            const evalMsg = percent >= 90 ? "إبداع منقطع النظير! 👑" : percent >= 75 ? "أداء متميز جداً 👏" : percent >= 50 ? "أداء جيد.. استمر 👍" : "فرصة للمراجعة والتحسن 💪";
 
             return (
-                <div className="max-w-4xl mx-auto space-y-10 animate-slide">
-                    <div className="bg-white dark:bg-slate-800 p-12 rounded-[3rem] border border-slate-200 dark:border-slate-700 shadow-2xl text-center space-y-8">
-                        <div className="space-y-2">
-                            <h2 className="text-5xl font-black dark:text-white">{evalMsg}</h2>
-                            <p className="text-slate-500 dark:text-slate-400 text-xl font-medium">Exam Complete: {exam.title}</p>
+                <div className="max-w-4xl mx-auto space-y-12 animate-slide">
+                    <div className="bg-white dark:bg-slate-800 p-16 rounded-[4rem] border border-slate-200 dark:border-slate-700 shadow-2xl text-center space-y-10">
+                        <div className="space-y-4">
+                            <h2 className="text-5xl sm:text-6xl font-black text-slate-900 dark:text-white leading-tight">{evalMsg}</h2>
+                            <p className="text-slate-500 dark:text-slate-400 text-2xl font-bold">تم إتمام {exam.title} بنجاح</p>
                         </div>
-                        <div className="grid grid-cols-3 gap-4 py-8 border-y border-slate-100 dark:border-slate-700">
-                            <div><p className="text-4xl font-black text-amber-600">{percent}%</p><p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Score</p></div>
-                            <div><p className="text-4xl font-black text-green-500">{score}</p><p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Correct</p></div>
-                            <div><p className="text-4xl font-black text-red-500">{questions.length - score}</p><p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Wrong</p></div>
+                        <div className="grid grid-cols-3 gap-6 py-10 border-y-2 border-slate-100 dark:border-slate-700">
+                            <div className="space-y-2"><p className="text-5xl font-black text-amber-600">{percent}%</p><p className="text-xs font-black uppercase tracking-widest text-slate-400">Score</p></div>
+                            <div className="space-y-2"><p className="text-5xl font-black text-green-500">{score}</p><p className="text-xs font-black uppercase tracking-widest text-slate-400">Correct</p></div>
+                            <div className="space-y-2"><p className="text-5xl font-black text-red-500">{questions.length - score}</p><p className="text-xs font-black uppercase tracking-widest text-slate-400">Mistakes</p></div>
                         </div>
-                        <button onClick={onRestart} className="bg-amber-500 hover:bg-amber-600 text-white px-12 py-4 rounded-2xl font-black text-lg shadow-2xl transition-all active:scale-95">Main Menu</button>
+                        <button onClick={onRestart} className="bg-amber-500 hover:bg-amber-600 text-white px-16 py-5 rounded-[2rem] font-black text-2xl shadow-2xl transition-all active:scale-95 ring-4 ring-amber-500/20">القائمة الرئيسية</button>
                     </div>
                 </div>
             );
@@ -448,7 +503,12 @@
             const [isLoading, setIsLoading] = useState(true);
             const [selectedExam, setSelectedExam] = useState(null);
             const [darkMode, setDarkMode] = useState(true); 
-            const [audioPlaying, setAudioPlaying] = useState(false);
+            
+            // Persistent Audio & Reminder Settings
+            const [audioPlaying, setAudioPlaying] = useState(() => localStorage.getItem('boss_audio_on') !== 'false');
+            const [volume, setVolume] = useState(() => parseFloat(localStorage.getItem('boss_volume')) || 0.25);
+            const [remindersEnabled, setRemindersEnabled] = useState(() => localStorage.getItem('boss_reminders') !== 'false');
+            
             const [showAudioHint, setShowAudioHint] = useState(false);
             const [showReminder, setShowReminder] = useState(false);
             const [resultsData, setResultsData] = useState(null);
@@ -458,46 +518,50 @@
                 document.documentElement.className = darkMode ? 'dark' : 'light';
             }, [darkMode]);
 
-            // Audio Logic
+            useEffect(() => {
+                localStorage.setItem('boss_audio_on', audioPlaying);
+                localStorage.setItem('boss_volume', volume);
+                localStorage.setItem('boss_reminders', remindersEnabled);
+            }, [audioPlaying, volume, remindersEnabled]);
+
+            // Audio Management
             useEffect(() => {
                 if (audioRef.current) {
-                    audioRef.current.volume = 0.25; // 25% volume
+                    audioRef.current.volume = volume;
                     if (audioPlaying) {
-                        audioRef.current.play().catch(e => {
-                            console.log("Play failed, likely autoplay restriction.");
-                            setAudioPlaying(false);
-                        });
+                        audioRef.current.play().catch(() => setAudioPlaying(false));
                     } else {
                         audioRef.current.pause();
                     }
                 }
-            }, [audioPlaying]);
+            }, [audioPlaying, volume]);
 
-            // Automatic logic after splash
+            // Autostart and 1-minute reminders
             useEffect(() => {
                 if (!isLoading) {
                     setAudioPlaying(true);
                     
-                    // Recurring reminder every 1 minute (60,000ms)
                     const reminderInterval = setInterval(() => {
-                        setShowReminder(true);
-                        setTimeout(() => setShowReminder(false), 5000); 
-                    }, 60000);
+                        if (remindersEnabled) {
+                            setShowReminder(true);
+                            setTimeout(() => setShowReminder(false), 5500); 
+                        }
+                    }, 60000); // 1 minute interval
                     
                     return () => clearInterval(reminderInterval);
                 }
-            }, [isLoading]);
+            }, [isLoading, remindersEnabled]);
 
-            // Listener to force audio if browser blocked autoplay
+            // Interaction listener to overcome autoplay policy
             useEffect(() => {
-                const handleFirstClick = () => {
-                    if (!audioPlaying && !isLoading) {
+                const handleInteraction = () => {
+                    if (!audioPlaying && !isLoading && localStorage.getItem('boss_audio_on') !== 'false') {
                         setAudioPlaying(true);
-                        document.removeEventListener('click', handleFirstClick);
+                        document.removeEventListener('click', handleInteraction);
                     }
                 };
-                document.addEventListener('click', handleFirstClick);
-                return () => document.removeEventListener('click', handleFirstClick);
+                document.addEventListener('click', handleInteraction);
+                return () => document.removeEventListener('click', handleInteraction);
             }, [audioPlaying, isLoading]);
 
             const startExam = (id) => {
@@ -509,7 +573,7 @@
             const handleSplashComplete = () => {
                 setIsLoading(false);
                 setShowAudioHint(true);
-                setTimeout(() => setShowAudioHint(false), 5000); 
+                setTimeout(() => setShowAudioHint(false), 6500); 
             };
 
             const goHome = () => {
@@ -519,7 +583,7 @@
             };
 
             return (
-                <div className="min-h-screen flex flex-col transition-colors">
+                <div className="min-h-screen flex flex-col transition-all duration-500">
                     <audio ref={audioRef} src="P1.mp3" loop />
                     
                     <AnimatePresence>
@@ -534,51 +598,55 @@
                                 onReset={goHome} 
                                 audioPlaying={audioPlaying} 
                                 setAudioPlaying={setAudioPlaying}
+                                volume={volume}
+                                setVolume={setVolume}
+                                remindersEnabled={remindersEnabled}
+                                setRemindersEnabled={setRemindersEnabled}
                             />
                             
                             <AnimatePresence>
                                 {showAudioHint && (
                                     <motion.div 
-                                        initial={{ opacity: 0, x: 50 }}
+                                        initial={{ opacity: 0, x: 60 }}
                                         animate={{ opacity: 1, x: 0 }}
-                                        exit={{ opacity: 0, x: 50 }}
-                                        className="fixed top-20 right-4 z-[60] glass p-4 rounded-2xl border border-amber-500 shadow-xl flex items-center gap-3 backdrop-blur-md"
+                                        exit={{ opacity: 0, x: 60 }}
+                                        className="fixed top-20 right-6 z-[60] glass p-5 rounded-[1.5rem] border-2 border-amber-500 shadow-2xl flex items-center gap-4 backdrop-blur-xl"
                                     >
                                         <div className="flex flex-col items-end">
-                                            <p dir="rtl" className="text-sm font-bold text-slate-800 dark:text-slate-100">
-                                                لو أنت عاوز تتحكم بصوت اضغط على السماعة اللي فوق
+                                            <p dir="rtl" className="text-sm font-black text-slate-800 dark:text-slate-100 leading-tight">
+                                                لو أنت عاوز تتحكم بصوت أو التذكير اضغط على الأيقونات اللي فوق 👆
                                             </p>
                                         </div>
-                                        <span className="text-2xl animate-pulse">🔊</span>
+                                        <span className="text-3xl animate-bounce">📢</span>
                                     </motion.div>
                                 )}
                                 
-                                {showReminder && (
+                                {showReminder && remindersEnabled && (
                                     <motion.div 
-                                        initial={{ opacity: 0, y: 50 }}
+                                        initial={{ opacity: 0, y: 70 }}
                                         animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0, y: 50 }}
-                                        className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[60] glass px-10 py-5 rounded-full border border-gold shadow-2xl flex items-center gap-3 backdrop-blur-2xl bg-white/20 dark:bg-black/20"
+                                        exit={{ opacity: 0, y: 70 }}
+                                        className="fixed bottom-12 left-1/2 -translate-x-1/2 z-[60] glass px-12 py-6 rounded-full border-2 border-gold shadow-2xl flex items-center gap-4 backdrop-blur-3xl bg-white/30 dark:bg-black/40"
                                     >
-                                        <p dir="rtl" className="text-2xl font-black boss-gold-text tracking-wider">
+                                        <p dir="rtl" className="text-3xl font-black boss-gold-text tracking-tighter filter drop-shadow-md">
                                             صلى على النبي 🤍
                                         </p>
                                     </motion.div>
                                 )}
                             </AnimatePresence>
 
-                            <main className="flex-1 max-w-6xl mx-auto px-4 py-12 w-full">
+                            <main className="flex-1 max-w-6xl mx-auto px-4 py-16 w-full">
                                 {view === 'home' && (
-                                    <div className="space-y-16 animate-slide">
-                                        <div className="text-center space-y-6">
-                                            <h2 className="text-4xl sm:text-7xl font-black tracking-tight leading-tight">
-                                                The Ultimate <span className="boss-gold-text">Oral Pathology</span> Mastery.
+                                    <div className="space-y-20 animate-slide">
+                                        <div className="text-center space-y-8">
+                                            <h2 className="text-5xl sm:text-8xl font-black tracking-tighter leading-none">
+                                                Master <span className="boss-gold-text">Oral Pathology</span> Like a Boss.
                                             </h2>
-                                            <p className="text-slate-500 dark:text-slate-400 max-w-2xl mx-auto text-xl font-medium">
-                                                Advanced clinical pathology training featuring 1000 randomized examination questions. Master oral histology, bone pathology, and curriculum details.
+                                            <p className="text-slate-500 dark:text-slate-400 max-w-2xl mx-auto text-2xl font-bold leading-relaxed">
+                                                1000 AI-powered elite MCQ questions across 10 structured exams. Designed for excellence, crafted for masters.
                                             </p>
                                         </div>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
                                             {EXAMS.map(exam => <ExamCard key={exam.id} exam={exam} onSelect={startExam} />)}
                                         </div>
                                     </div>
